@@ -1,5 +1,11 @@
 print("Bienvenido a F.E.R.R.E")
 
+import json
+import os
+
+Archivo_inventario = "inventario.json"
+Archivo_ventas = "ventas.json"
+
 # Precios de las cosas,los clavos y tornillos se venden por pieza, 10/cu, la manguera se vende por metro, a 25 el metro
 precios = {             
     "Tornillo": 10,
@@ -114,8 +120,8 @@ inventario = [
 
     # los guantes es por cajas
     ["Guantes de látex", 15],
-    ["Guantes de carnaza": 15],
-    ["Guantes de nylon": 15],
+    ["Guantes de carnaza", 15],
+    ["Guantes de nylon", 15],
     ["Serrucho", 15],
     ["Segueta", 20],
     ["Serrucho con arco", 20],
@@ -156,26 +162,198 @@ inventario = [
     ["Juego de herramientas", 10],
 ]
 
+# esta es la funcion para mostrar el inventario
+
+def mostrar_inventario(inventario):
+    print("\n================================")
+    print("       INVENTARIO ACTUAL")
+    print("================================")
+
+    for producto in inventario:
+        print(producto[0], ":", producto[1], "piezas")
+
+    print("================================")
 
 
 
+# esta es la funcion para buscar un producto 
+
+def buscar_producto(inventario,nombre):
+
+    for producto in inventario:
+
+        if producto[0] == nombre:
+            return producto
+        
+    return None
+
+# funcion para hacer una venta con return con varios valores
+
+def vender_producto(inventario, precios, nombre, cantidad):
+    producto = buscar_producto(inventario, nombre)
+
+    if producto is None:
+        return False, f"El producto '{nombre}' no existe en el inventario."
+
+    if cantidad <= 0:
+        return False, "La cantidad debe ser mayor a 0."
+
+    if producto[1] < cantidad:
+        return False, f"No hay suficiente stock de '{nombre}'. Disponible: {producto[1]}"
+
+    precio_unitario = precios.get(nombre)
+    if precio_unitario is None:
+        return False, f"No se encontró el precio de '{nombre}'."
+
+    # restar inventario
+    producto[1] -= cantidad
+    total = precio_unitario * cantidad
+    return True, total
 
 
 
+    # cargado y guardado del inventario y las ventas
+
+def cargar_inventario():
+
+    # carga el inventario desde el archivo guardado la ultima vez.
+    # si el archivo no existe aun, se usa el inventario inicial  
+
+    if os.path.exists(Archivo_inventario): 
+        with open(Archivo_inventario, "r") as archivo:
+            return json.load(archivo)
+
+    else:
+        # copia para no modificar accidentalmente la lista original
+        return [fila[:] for fila in inventario]
+
+def guardar_inventario(inventario):
+    with open(Archivo_inventario, "w") as archivo:
+        json.dump(inventario, archivo)
+
+def cargar_ventas():
+    if os.path.exists(Archivo_ventas):
+        with open(Archivo_ventas, "r") as archivo:
+            return json.load(archivo)
+    else:   
+        return []
+
+def guardar_ventas(ventas):
+    with open(Archivo_ventas, "w") as archivo:
+        json.dump(ventas, archivo)
 
 
-while True:
-    print("\nOpciones: ")
-    print("1.- Agregar Producto")
-    print("2.- Consultar Inventario")
-    print("3.- Buscar Producto")
-    print("4.- Vender Producto")
-    print("5.- Reporte de Stock Bajo")
-    print("6.- Ver Ventas del Día")
-    print("7.- Ver Total Vendido en el Día")
-    print("8.- Salir")
+# validación de los precios
 
-    opcion = input("¿Qué operación desea realizar?: ")
+def validar_precios(precios):
+    # esto revisa que todos los precios sean mayores a 0
+    for producto, precio in precios.items():
+        if precio <= 0:
+         print(f"AVISO: el precio de '{producto}' no es válido ({precio}). Debe ser mayor a 0.")
+    
 
-    if opcion == "1":
-        print(input("¿Qué producto desea ingresar al sistema?"))
+
+# funciones de inventario
+
+def mostrar_inventario(inventario):
+    print("\n================================")
+    print("       INVENTARIO ACTUAL")
+    print("================================")
+
+    for producto in inventario:
+        print(producto[0], ":", producto[1], "piezas")
+
+    print("================================")
+
+
+def mostrar_stock_bajo(inventario, limite=5):
+   # esto muestra los productos en limite o en stock bajo
+    print("\n================================")
+    print("      PRODUCTOS CON STOCK BAJO")
+    print("================================")
+
+    bajos = [producto for producto in inventario if producto[1] <= limite]
+
+    if not bajos:
+        print("No hay productos en stock bajo.")
+    else:
+        for producto in bajos:
+            print(producto[0], ":", producto[1], "piezas")
+
+    print("================================")
+
+def buscar_producto(inventario, nombre):
+    for producto in inventario:
+        if producto[0] == nombre:
+            return producto
+    return None
+
+# esta será el área de ventas
+
+def vender_producto(inventario, precios, nombre, cantidad):
+    producto = buscar_producto(inventario, nombre)
+
+    if producto is None:
+        return False, f"El producto '{nombre}' no existe en el inventario."
+
+    if cantidad <= 0:
+        return False, "La cantidad debe ser mayor a 0."
+
+    precio_unitario = precios.get(nombre)
+    if precio_unitario is None:
+        return False, f"No se encontró el precio de '{nombre}'."
+
+    if precio_unitario <= 0:
+        return False, f"El precio de '{nombre}' no es válido."
+
+
+    # no se puede vender más de lo que hay en el inventario
+    if producto [1] < cantidad:
+        return False, f"No hay suficiente stock de '{nombre}' Disponible: {producto[1]}"
+
+
+    # esto es para restar el inventario 
+    producto[1] -= cantidad 
+    total = precio_unitario * cantidad
+
+    venta = {
+        "producto": nombre,
+        "cantidad": cantidad,
+        "precio_unitario": precio_unitario,
+        "total": total
+    }
+
+    return True, venta
+
+def mostrar_ventas(ventas):
+    print("\n================================")
+    print("      HISTORIAL DE VENTAS")
+    print("================================")
+
+    if not ventas:
+        print("Todavía no se ha registrado ninguna venta.")
+    else:
+        for i, venta in enumerate(ventas, start=1):
+            print(f"{i}. {venta['producto']} | Cantidad: {venta['cantidad']}"
+                  f"| Precio unitario: ${venta['precio_unitario']} | Total: ${venta['total']}")
+
+    print("================================")
+
+
+def cancelar_ultima_venta(inventario, ventas):
+
+    # esto cancela la ultima venta hecha, regresando el producto al inventario
+    if not ventas:
+        return False, "No hay ventas que cancelar."
+
+    ultima_venta = ventas.pop()
+    producto = buscar_producto(inventario, ultima_venta["producto"])
+  
+    if producto is not None:
+        producto[1] += ultima_venta["cantidad"]
+
+    return True, ultima_venta
+
+
+
+# ahora si este es el programa principal 
