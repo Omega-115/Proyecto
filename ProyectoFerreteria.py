@@ -44,8 +44,8 @@ precios = {
     "Electrodo": 25,
     "Careta para soldar": 75,
     " Lentes para soldar": 45,
+    
     # el alambre es por metro
-
     "Alambre": 25,
     "Soldadora pequeña": 150,
     "Báscula chica": 50,
@@ -80,8 +80,81 @@ precios = {
 
 # Es inventario, producto y cantidad disponible
 
+inventario = [
+    ["Tornillo", 1000],
+    ["Martillo", 15],
+    ["Resistol 5000 tubo chico", 15],
+    ["Resistol 5000 tubo grande", 15],
+    ["Flexómetro", 15],
+    ["Atornillador", 15],
+    ["Desarmadores", 15],
+    ["Clavos", 1000],
+    ["Escalera 1.50", 10],
+    ["Escalera reajustable", 10],
 
+    # En las extensiones hay 100 metros cada una
+    ["Extensión 1 metro", 100],
+    ["Extensión 2 metros", 100],
+    ["Extensión 3 metros", 100],
+    ["Manguera", 100],
+    ["Foco ecológico", 20],
+    ["Foco luz cálida", 20],
+    ["Luces led", 100],
 
+    ["Linterna con baterías", 15],
+    ["Linterna recargable", 15],
+    ["Escuadra", 15],
+    ["Regla", 20],
+    ["Caja para herramientas", 10],
+    ["Cutters", 15],
+    ["Llave Allen", 20],
+    ["Llave Inglesa", 20],
+    ["Llave ajustable", 45],
+    ["Taladro", 10],
+
+    # los guantes es por cajas
+    ["Guantes de látex", 15],
+    ["Guantes de carnaza": 15],
+    ["Guantes de nylon": 15],
+    ["Serrucho", 15],
+    ["Segueta", 20],
+    ["Serrucho con arco", 20],
+    ["Repuesto de segueta", 40],
+    ["Electrodo", 15],
+    ["Careta para soldar", 10],
+    ["Lentes para soldar", 15],
+
+    # el alambre es por metro
+    ["Alambre", 100],
+    ["Soldadora pequeña", 15],
+    ["Báscula chica", 10],
+    ["Báscula grande", 10],
+    ["Formones", 15],                
+    ["Tijeras para jardinería", 15],
+    ["Bombas de agua", 10],
+    ["Repuesto para bomba de agua", 10],
+    ["Flotadores para agua", 10],
+
+    # la tubería se vende por pieza
+    ["Tubería PVC 32mm", 50],
+    ["Tubería PVC 40mm", 50],
+    ["Tubería PVC 50mm", 50],
+    ["Tubería PVC 63mm", 50],
+    ["Tubería PVC 75mm", 50],
+    ["Tubería PVC 90mm", 50],
+    ["Tubería PVC 110mm", 50],
+    ["Tubería PVC 160mm", 50],
+    ["Tubería PVC 200mm", 50],
+    ["Enchufe", 50],
+
+    # el cable se vende por metro
+    ["Cable para instalación eléctrica", 100],
+    ["Grifos", 20],
+    ["Manerales", 20],
+    ["Cerraduras", 20],
+    ["Cintas", 20],
+    ["Juego de herramientas", 10],
+]
 
 
 
@@ -106,4 +179,3 @@ while True:
 
     if opcion == "1":
         print(input("¿Qué producto desea ingresar al sistema?"))
-
