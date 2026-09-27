@@ -5,6 +5,7 @@ import os
 
 Archivo_inventario = "inventario.json"
 Archivo_ventas = "ventas.json"
+Archivo_precios = "precios.json"
 
 # Precios de las cosas,los clavos y tornillos se venden por pieza, 10/cu, la manguera se vende por metro, a 25 el metro
 precios = {             
@@ -84,9 +85,10 @@ precios = {
 }
 
 
-# Es inventario, producto y cantidad disponible
+# Es inventario, producto y cantidad disponible (esta lista solo se usa
+# la primera vez que se corre el programa, cuando todavía no existe el JSON)
 
-inventario = [
+inventario_inicial = [
     ["Tornillo", 1000],
     ["Martillo", 15],
     ["Resistol 5000 tubo chico", 15],
@@ -162,123 +164,78 @@ inventario = [
     ["Juego de herramientas", 10],
 ]
 
-# esta es la funcion para mostrar el inventario
+encontrado = False
+mensaje = ""
 
-def mostrar_inventario(inventario):
-    print("\n================================")
-    print("       INVENTARIO ACTUAL")
-    print("================================")
+# funcion para borrar productos 
 
-    for producto in inventario:
-        print(producto[0], ":", producto[1], "piezas")
-
-    print("================================")
-
-
-
-# esta es la funcion para buscar un producto 
-
-def buscar_producto(inventario,nombre):
-
-    for producto in inventario:
-
-        if producto[0] == nombre:
-            return producto
-        
-    return None
-
-
-# funcion para agregar producto nuevo al inventario
-
-def agregar_producto(inventario, precios, nombre, precio, cantidad):
-    # si el producto ya está registrado, se informa para no duplicarlo
-    if buscar_producto(inventario,nombre) is not None:
-        return False, f"El producto '{nombre}' ya existe en el inventario."
-
-    #la cantidad debe de ser mayor a 0
-    if precio <= 0:
-        return False, f"El precio ingresado ({precio}) no es válido. Tiene que ser mayor a 0."
-
-    # la cantidad ingresada debe de ser mayor o igual a 0
-    if cantidad < 0:
-        return False, f"La cantidad ingresada ({cantidad}) no es válida. Tiene que ser mayor o igual a 0."
-
-    # se agrega al inv. y a la lista de precios
-    inventario.append([nombre, cantidad])
-    precios[nombre] = precio
-
-    return True, f"Producto agregado: {nombre} | Precio: ${precio} | Cantidad: {cantidad}"
-
-
-
-
-# funcion para hacer una venta con return con varios valores
-
-def vender_producto(inventario, precios, nombre, cantidad):
+def eliminar_producto(inventario, precios, nombre):
     producto = buscar_producto(inventario, nombre)
 
     if producto is None:
         return False, f"El producto '{nombre}' no existe en el inventario."
 
-    if cantidad <= 0:
-        return False, "La cantidad debe ser mayor a 0."
+    # se quita de la lista de inventario
+    inventario.remove(producto)
 
-    if producto[1] < cantidad:
-        return False, f"No hay suficiente stock de '{nombre}'. Disponible: {producto[1]}"
+    # se quita también de precios, si está ahí
+    if nombre in precios:
+        del precios[nombre]
 
-    precio_unitario = precios.get(nombre)
-    if precio_unitario is None:
-        return False, f"No se encontró el precio de '{nombre}'."
-
-    # restar inventario
-    producto[1] -= cantidad
-    total = precio_unitario * cantidad
-    return True, total
+    return True, f"Producto eliminado: {nombre}"
 
 
 
-    # cargado y guardado del inventario y las ventas
 
+# gaurdado de precios
+def cargar_precios():
+    if os.path.exists(Archivo_precios):
+        with open(Archivo_precios, "r") as archivo:
+            return json.load(archivo)
+    else:
+        # copia para no modificar el diccionario original
+        return dict(precios)
+
+def guardar_precios(precios):
+    with open(Archivo_precios, "w") as archivo:
+        json.dump(precios, archivo, ensure_ascii=False, indent=2)
+
+# carga y guardado de inventario y ventas en json
 def cargar_inventario():
-
-    # carga el inventario desde el archivo guardado la ultima vez.
-    # si el archivo no existe aun, se usa el inventario inicial  
-
-    if os.path.exists(Archivo_inventario): 
+    # carga el inventario desde inventario.json.
+    # si el archivo no existe aún (primera vez que se corre el programa),
+    # se usa el inventario inicial de arriba.
+    if os.path.exists(Archivo_inventario):
         with open(Archivo_inventario, "r") as archivo:
             return json.load(archivo)
-
     else:
         # copia para no modificar accidentalmente la lista original
-        return [fila[:] for fila in inventario]
+        return [fila[:] for fila in inventario_inicial]
+
 
 def guardar_inventario(inventario):
     with open(Archivo_inventario, "w") as archivo:
-        json.dump(inventario, archivo)
+        json.dump(inventario, archivo, ensure_ascii=False, indent=2)
+
 
 def cargar_ventas():
+    # carga el historial de ventas desde ventas.json.
+    # si el archivo no existe aún, se empieza con una lista vacía.
     if os.path.exists(Archivo_ventas):
         with open(Archivo_ventas, "r") as archivo:
             return json.load(archivo)
-    else:   
+    else:
         return []
+
 
 def guardar_ventas(ventas):
     with open(Archivo_ventas, "w") as archivo:
-        json.dump(ventas, archivo)
+        json.dump(ventas, archivo, ensure_ascii=False, indent=2)
 
 
-# validación de los precios
 
-def validar_precios(precios):
-    # esto revisa que todos los precios sean mayores a 0
-    for producto, precio in precios.items():
-        if precio <= 0:
-         print(f"AVISO: el precio de '{producto}' no es válido ({precio}). Debe ser mayor a 0.")
-    
+# Funciones de inventario
 
-
-# funciones de inventario
 
 def mostrar_inventario(inventario):
     print("\n================================")
@@ -292,7 +249,7 @@ def mostrar_inventario(inventario):
 
 
 def mostrar_stock_bajo(inventario, limite=5):
-   # esto muestra los productos en limite o en stock bajo
+    # esto muestra los productos en el límite o en stock bajo
     print("\n================================")
     print("      PRODUCTOS CON STOCK BAJO")
     print("================================")
@@ -307,13 +264,48 @@ def mostrar_stock_bajo(inventario, limite=5):
 
     print("================================")
 
+
 def buscar_producto(inventario, nombre):
     for producto in inventario:
         if producto[0] == nombre:
             return producto
     return None
 
-# esta será el área de ventas
+def buscar_producto_info(inventario, precios, nombre):
+    producto = buscar_producto(inventario, nombre)
+
+    if producto is None:
+        return False, f"El producto '{nombre}' no se encontró en el inventario."
+
+    precio = precios.get(nombre)
+    if precio is None:
+        return True, f"{producto[0]} | Precio: No registrado."
+
+    return True, f"{producto[0]} | Precio: ${precio}"
+
+
+
+def agregar_producto(inventario, precios, nombre, precio, cantidad):
+    # si el producto ya está registrado, se informa para no duplicarlo
+    if buscar_producto(inventario, nombre) is not None:
+        return False, f"El producto '{nombre}' ya existe en el inventario."
+
+    # el precio debe ser mayor a 0
+    if precio <= 0:
+        return False, f"El precio ingresado ({precio}) no es válido. Tiene que ser mayor a 0."
+
+    # la cantidad ingresada debe ser mayor o igual a 0
+    if cantidad < 0:
+        return False, f"La cantidad ingresada ({cantidad}) no es válida. Tiene que ser mayor o igual a 0."
+
+    # se agrega al inventario y a la lista de precios
+    inventario.append([nombre, cantidad])
+    precios[nombre] = precio
+
+    return True, f"Producto agregado: {nombre} | Precio: ${precio} | Cantidad: {cantidad}"
+
+
+# Funciones de ventas
 
 def vender_producto(inventario, precios, nombre, cantidad):
     producto = buscar_producto(inventario, nombre)
@@ -331,14 +323,12 @@ def vender_producto(inventario, precios, nombre, cantidad):
     if precio_unitario <= 0:
         return False, f"El precio de '{nombre}' no es válido."
 
-
     # no se puede vender más de lo que hay en el inventario
-    if producto [1] < cantidad:
-        return False, f"No hay suficiente stock de '{nombre}' Disponible: {producto[1]}"
+    if producto[1] < cantidad:
+        return False, f"No hay suficiente stock de '{nombre}'. Disponible: {producto[1]}"
 
-
-    # esto es para restar el inventario 
-    producto[1] -= cantidad 
+    # se resta del inventario
+    producto[1] -= cantidad
     total = precio_unitario * cantidad
 
     venta = {
@@ -350,6 +340,7 @@ def vender_producto(inventario, precios, nombre, cantidad):
 
     return True, venta
 
+
 def mostrar_ventas(ventas):
     print("\n================================")
     print("      HISTORIAL DE VENTAS")
@@ -360,20 +351,23 @@ def mostrar_ventas(ventas):
     else:
         for i, venta in enumerate(ventas, start=1):
             print(f"{i}. {venta['producto']} | Cantidad: {venta['cantidad']}"
-                  f"| Precio unitario: ${venta['precio_unitario']} | Total: ${venta['total']}")
+                  f" | Precio unitario: ${venta['precio_unitario']} | Total: ${venta['total']}")
 
     print("================================")
 
 
-def cancelar_ultima_venta(inventario, ventas):
+def total_vendido(ventas):
+    return sum(venta["total"] for venta in ventas)
 
-    # esto cancela la ultima venta hecha, regresando el producto al inventario
+
+def cancelar_ultima_venta(inventario, ventas):
+    # esto cancela la última venta hecha, regresando el producto al inventario
     if not ventas:
         return False, "No hay ventas que cancelar."
 
     ultima_venta = ventas.pop()
     producto = buscar_producto(inventario, ultima_venta["producto"])
-  
+
     if producto is not None:
         producto[1] += ultima_venta["cantidad"]
 
@@ -381,7 +375,16 @@ def cancelar_ultima_venta(inventario, ventas):
 
 
 
-# ahora si este es el programa principal
+# Programa principal
+
+
+# se cargan el inventario y las ventas guardadas (o los valores iniciales
+# si es la primera vez que se corre el programa)
+inventario = cargar_inventario()
+ventas = cargar_ventas()
+precios = cargar_precios()
+
+
 
 
 while True:
@@ -396,17 +399,16 @@ while True:
     print("6.- Ver ventas del día")
     print("7.- Ver total vendido en el día")
     print("8.- Salir")
+    print("9.- Eliminar producto")
 
     opcion = input("¿Qué operación desea realizar?: ")
-
 
     if opcion == "1":
         nombre = input("Nombre del producto: ").strip()
 
-        # se valida que el precio sea un numero decimal
+        # se valida que el precio sea un número decimal
         try:
             precio = float(input("Precio del producto: "))
-
         except ValueError:
             print("El precio debe ser un número. Intenta de nuevo.")
             continue
@@ -414,10 +416,55 @@ while True:
         # se valida que la cantidad ingresada sea un número entero
         try:
             cantidad = int(input("Cantidad inicial en stock: "))
-
         except ValueError:
-            print("La cantidad debe ser un número entero. Intente de nuevo.")      
+            print("La cantidad debe ser un número entero. Intenta de nuevo.")
             continue
 
         exito, mensaje = agregar_producto(inventario, precios, nombre, precio, cantidad)
         print(mensaje)
+
+        if exito:
+            guardar_inventario(inventario)
+
+    elif opcion == "2":
+        mostrar_inventario(inventario)
+
+    elif opcion == "3":
+        nombre = input("¿Cuál producto desea buscar?: ")
+        encontrado, mensaje = buscar_producto_info(inventario, precios, nombre)
+        print(mensaje)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    elif opcion == "9":
+
+        nombre = input("Nombre del producto a eliminar: ").strip()
+        exito, mensaje = eliminar_producto(inventario, precios, nombre)
+        print(mensaje)
+
+    if exito:
+        guardar_inventario(inventario)
+        guardar_precios(precios)   # <- importante, para que no reaparezca el precio viejo
