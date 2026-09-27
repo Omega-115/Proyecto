@@ -187,6 +187,31 @@ def buscar_producto(inventario,nombre):
         
     return None
 
+
+# funcion para agregar producto nuevo al inventario
+
+def agregar_producto(inventario, precios, nombre, precio, cantidad):
+    # si el producto ya está registrado, se informa para no duplicarlo
+    if buscar_producto(inventario,nombre) is not None:
+        return False, f"El producto '{nombre}' ya existe en el inventario."
+
+    #la cantidad debe de ser mayor a 0
+    if precio <= 0:
+        return False, f"El precio ingresado ({precio}) no es válido. Tiene que ser mayor a 0."
+
+    # la cantidad ingresada debe de ser mayor o igual a 0
+    if cantidad < 0:
+        return False, f"La cantidad ingresada ({cantidad}) no es válida. Tiene que ser mayor o igual a 0."
+
+    # se agrega al inv. y a la lista de precios
+    inventario.append([nombre, cantidad])
+    precios[nombre] = precio
+
+    return True, f"Producto agregado: {nombre} | Precio: ${precio} | Cantidad: {cantidad}"
+
+
+
+
 # funcion para hacer una venta con return con varios valores
 
 def vender_producto(inventario, precios, nombre, cantidad):
@@ -356,4 +381,43 @@ def cancelar_ultima_venta(inventario, ventas):
 
 
 
-# ahora si este es el programa principal 
+# ahora si este es el programa principal
+
+
+while True:
+    print("\n=======================")
+    print("         OPCIONES")
+    print("========================")
+    print("1.- Agregar producto")
+    print("2.- Consultar inventario")
+    print("3.- Buscar producto")
+    print("4.- Vender producto")
+    print("5.- Reporte de stock bajo")
+    print("6.- Ver ventas del día")
+    print("7.- Ver total vendido en el día")
+    print("8.- Salir")
+
+    opcion = input("¿Qué operación desea realizar?: ")
+
+
+    if opcion == "1":
+        nombre = input("Nombre del producto: ").strip()
+
+        # se valida que el precio sea un numero decimal
+        try:
+            precio = float(input("Precio del producto: "))
+
+        except ValueError:
+            print("El precio debe ser un número. Intenta de nuevo.")
+            continue
+
+        # se valida que la cantidad ingresada sea un número entero
+        try:
+            cantidad = int(input("Cantidad inicial en stock: "))
+
+        except ValueError:
+            print("La cantidad debe ser un número entero. Intente de nuevo.")      
+            continue
+
+        exito, mensaje = agregar_producto(inventario, precios, nombre, precio, cantidad)
+        print(mensaje)
