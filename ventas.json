@@ -1,0 +1,14 @@
+[
+  {
+    "producto": "Rodillo",
+    "cantidad": 2,
+    "precio_unitario": 50.0,
+    "total": 100.0
+  },
+  {
+    "producto": "Juego de herramientas",
+    "cantidad": 5,
+    "precio_unitario": 250,
+    "total": 1250
+  }
+]

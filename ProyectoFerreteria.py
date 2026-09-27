@@ -185,8 +185,6 @@ def eliminar_producto(inventario, precios, nombre):
     return True, f"Producto eliminado: {nombre}"
 
 
-
-
 # gaurdado de precios
 def cargar_precios():
     if os.path.exists(Archivo_precios):
@@ -281,7 +279,7 @@ def buscar_producto_info(inventario, precios, nombre):
     if precio is None:
         return True, f"{producto[0]} | Precio: No registrado."
 
-    return True, f"{producto[0]} | Precio: ${precio}"
+    return True, f"{producto[0]} | Existencias: {producto[1]} |Precio: ${precio}"
 
 
 
@@ -434,30 +432,49 @@ while True:
         encontrado, mensaje = buscar_producto_info(inventario, precios, nombre)
         print(mensaje)
 
+    elif opcion == "4":
+
+        nombre = input("Nombre del producto a vender: ").strip()
+        try:
+            cantidad = int(input("Cantidad a vender: "))
+        except ValueError:
+            print("La cantidad debe ser un número entero. Intenta de nuevo.")
+            continue
+
+        if cantidad <= 0:
+            print("La cantidad debe ser mayor a 0.")
+            continue
+
+        exito, resultado = vender_producto(inventario, precios, nombre, cantidad)
+
+        if exito:
+            venta = resultado
+            print(f"Venta realizada: {venta['producto']} | Cantidad: {venta['cantidad']} "
+                  f"| Precio unitario: ${venta['precio_unitario']} | Total: ${venta['total']}")
+            ventas.append(venta)
+            guardar_inventario(inventario)
+            guardar_ventas(ventas)
+        else:
+            print(resultado)
 
 
 
+    elif opcion == "5":
+        mostrar_stock_bajo(inventario)
 
+    elif opcion == "6":
+        mostrar_ventas(ventas)
 
+    elif opcion == "7":
+        print(f"Total vendido: ${total_vendido(ventas)}")
 
+    elif opcion == "8":
+        guardar_inventario(inventario)
+        guardar_ventas(ventas)
+        guardar_precios(precios)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        print("Gracias por usar el sistema.")
+        break
 
     elif opcion == "9":
 
@@ -465,6 +482,9 @@ while True:
         exito, mensaje = eliminar_producto(inventario, precios, nombre)
         print(mensaje)
 
-    if exito:
-        guardar_inventario(inventario)
-        guardar_precios(precios)   # <- importante, para que no reaparezca el precio viejo
+        if exito:
+            guardar_inventario(inventario)
+            guardar_precios(precios)
+
+    else:
+        print("Opción no válida. Intenta de nuevo.")
