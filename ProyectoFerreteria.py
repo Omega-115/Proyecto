@@ -281,6 +281,14 @@ def buscar_producto_info(inventario, precios, nombre):
 
     return True, f"{producto[0]} | Existencias: {producto[1]} |Precio: ${precio}"
 
+def nombre_valido(nombre):
+    permitidos = "abcdefghijklmnñopqrstuvwxyzáéíóúü "
+    if nombre == "":
+        return False
+    for letra in nombre.lower():
+        if letra not in permitidos:
+            return False
+    return True
 
 
 def agregar_producto(inventario, precios, nombre, precio, cantidad):
